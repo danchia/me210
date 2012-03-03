@@ -8,6 +8,6 @@ void globalTimeoutSetup() {
 	startTime = millis();
 }
 
-char gameTimeout() {
+char globalTimeout() {
 	return millis() - startTime >= GAME_TIMEOUT_MSEC;
 }
