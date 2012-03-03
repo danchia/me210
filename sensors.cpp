@@ -17,21 +17,21 @@ void readBackSensors(int values[]) {
        values[2] = analogRead(TAPE_SENSOR_REAR_RIGHT); 
 }
 
-int readSideSensor() {
-       return digitalRead(TAPE_SENSOR_SIDE);  
+char readSideSensor() {
+       return digitalRead(TAPE_SENSOR_SIDE) == 0;
 }
 
-int readHomeBeacon() {
-       return digitalRead(HOME_BEACON_SENSOR);  
+char readHomeBeacon() {
+       return digitalRead(HOME_BEACON_SENSOR) == 0;
 }
 
-int readFrontSeesaw() {
-       return digitalRead(FRONT_SEESAW_SENSOR);  
+char readFrontSeesaw() {
+       return digitalRead(FRONT_SEESAW_SENSOR) == 0;
       
 }
 
-int readSideSeesaw() {
-       return digitalRead(SIDE_SEESAW_SENSOR);  
+char readSideSeesaw() {
+       return digitalRead(SIDE_SEESAW_SENSOR) == 0;
 }
 
 

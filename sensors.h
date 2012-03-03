@@ -2,7 +2,7 @@
 
 void readFrontSensors(int values[]);
 void readBackSensors(int values[]);
-int readSideSensor();
-int readHomeBeacon();
-int readFrontSeesaw();
-int readSideSeesaw();
+char readSideSensor();
+char readHomeBeacon();
+char readFrontSeesaw();
+char readSideSeesaw();
