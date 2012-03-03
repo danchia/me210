@@ -23,6 +23,13 @@
 // Pins
 //
 
+
+// MOTOR
+#define MOTOR_LEFT_DIR 2
+#define MOTOR_LEFT_PWM 3
+#define MOTOR_RIGHT_DIR 12
+#define MOTOR_RIGHT_PWM 11
+
 // TAPE
 #define TAPE_SENSOR_FRONT_LEFT 0
 #define TAPE_SENSOR_FRONT_CENTER 1
