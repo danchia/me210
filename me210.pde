@@ -7,6 +7,10 @@
 void setup() {
 	// initialize modules
 	globalTimeoutSetup();
+
+	// initialize serial
+	Serial.init(57600);
+	Serial.println("Initialized");
 }
 
 void loop() {
