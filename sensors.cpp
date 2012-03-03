@@ -1,6 +1,9 @@
-
+#if defined(ARDUINO) && ARDUINO >= 100
+#include "Arduino.h"
+#else
+#include "WProgram.h"
+#endif
 #include "defines.h"
-
 
 void readFrontSensors(int values[]) {
        values[0] = analogRead(TAPE_SENSOR_FRONT_LEFT);  
@@ -16,12 +19,10 @@ void readBackSensors(int values[]) {
 
 int readSideSensor() {
        return digitalRead(TAPE_SENSOR_SIDE);  
-      
 }
 
 int readHomeBeacon() {
        return digitalRead(HOME_BEACON_SENSOR);  
-      
 }
 
 int readFrontSeesaw() {
@@ -31,7 +32,6 @@ int readFrontSeesaw() {
 
 int readSideSeesaw() {
        return digitalRead(SIDE_SEESAW_SENSOR);  
-      
 }
 
 
