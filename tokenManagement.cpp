@@ -20,10 +20,11 @@ When      Who  Description
 #else
 #include "WProgram.h"
 #endif
-#include <Servo.h>
+
 #include "tokenManagement.h"
 #include "defines.h"
 #include <Timers.h>
+#include <Servo.h>
 
 /*----------------------------- Module Defines ------------------------------*/
 #define SERVO_TIMER_LENGTH 15
@@ -46,6 +47,7 @@ static int servoAngle;
 static int bucketNo;
 static int servoState;
 static int nextBucketAngle;
+static Servo servo;
 
 /*----------------------------- Module Code --------------------------------*/
 
@@ -136,7 +138,7 @@ void updateServo(void) {
         }
         break;
       case AT_REST: 
-      case default:
+      default:
         // do nothing
         break;
     }
@@ -168,7 +170,7 @@ void initializeServo(void) {
   Returns:     number of buckets left
   Notes:
 ******************************************************************************/
-int numBucketsLeft = bucketsLeft(void) {
-  numBucketsLeft = MAX_BUCKETS - bucketNo;
+int bucketsLeft(void) {
+  int numBucketsLeft = MAX_BUCKETS - bucketNo;
   return numBucketsLeft;
 }
