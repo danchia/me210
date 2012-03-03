@@ -18,7 +18,7 @@ void readBackSensors(int values[]) {
 }
 
 char readSideSensor() {
-       return digitalRead(TAPE_SENSOR_SIDE) == 0;
+       return digitalRead(TAPE_SENSOR_SIDE) != 0;
 }
 
 char readHomeBeacon() {
