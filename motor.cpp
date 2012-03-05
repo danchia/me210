@@ -20,7 +20,7 @@ void setMotion(int fwdSpeed, int rotSpeed) {
 	int leftSpeed = fwdSpeed + rotSpeed;
 	int rightSpeed = fwdSpeed - rotSpeed;
 
-	digitalWrite(MOTOR_LEFT_DIR, (leftSpeed < 0) ? LOW : HIGH);
+	digitalWrite(MOTOR_LEFT_DIR, (leftSpeed > 0) ? LOW : HIGH);
 	digitalWrite(MOTOR_RIGHT_DIR, (rightSpeed < 0) ? LOW : HIGH);
 
 	leftSpeed = abs(leftSpeed);

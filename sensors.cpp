@@ -34,7 +34,7 @@ char readSideSeesaw() {
        return digitalRead(SIDE_SEESAW_SENSOR) == 0;
 }
 
-int removeMean(int val[]) {
+int removeMin(int val[]) {
 	int min = val[0];
 	
 	if (val[1] < min)

@@ -7,5 +7,5 @@ char readHomeBeacon();
 char readFrontSeesaw();
 char readSideSeesaw();
 
-int removeMean(int val[]);
+int removeMin(int val[]);
 int getLinePos(int val[]);
