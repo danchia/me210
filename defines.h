@@ -10,12 +10,18 @@
 
 #define GAME_TIMEOUT_MSEC 120000		// two minutes
 
+#define LINE_KP 4		// * 1/8
+#define LINE_KD 2	
 #define LINE_POS_SCALE 100
+#define LINE_SENSOR_MIN_THRES 800
+#define LINE_SENSOR_MAX_THRES 100
+#define LINE_FOLLOW_UPDATE_PERIOD 2	// 2ms period, 500Hz control rate
 
 //
 // Timers
 //
 #define SERVO_TIMER 3
+#define LINE_FOLLOW_TIMER 2
 
 
 
