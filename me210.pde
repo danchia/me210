@@ -37,7 +37,7 @@ void loop() {
 //	Serial.println("");
 
 
-	//setMotion(190, -correction);
+	setMotion(190, -correction);
 	//setMotion(-190, -correction);
 
 	oldError = error;
