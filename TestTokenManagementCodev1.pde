@@ -1,0 +1,57 @@
+#include "defines.h"
+#include "tokenManagement.h"
+#include <Timers.h>
+#include <Servo.h>
+
+
+unsigned char TestForKey(void);
+void RespToKey(void);
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("start");
+  initializeServo();
+}
+
+void loop() {
+  if (TestForKey()) RespToKey();
+  updateServo();
+}
+
+unsigned char TestForKey(void) {
+  unsigned char KeyEventOccurred;
+  
+  KeyEventOccurred = Serial.available();
+  return KeyEventOccurred;
+}
+
+void RespToKey(void) {
+  unsigned char theKey;
+  
+  theKey = Serial.read();
+  
+  //checkKeyStroke(theKey);
+  
+  Serial.print("You pressed a key! The key was: ");
+  Serial.print(theKey);
+  Serial.print(", ASCII=");
+  Serial.println(theKey,HEX);
+  switch(theKey) {
+    case '1':
+      Serial.println("deposit");
+      depositTokens();
+      break;
+    case '2':
+      int numBucketsLeft;
+      numBucketsLeft = bucketsLeft();
+      Serial.println(numBucketsLeft);
+      break;
+    case '3':
+      Serial.println("return");
+      goHome();
+      break;
+    default:
+      Serial.println("default");
+      break;
+  }
+}
