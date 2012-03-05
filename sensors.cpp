@@ -18,20 +18,20 @@ void readBackSensors(int values[]) {
 }
 
 char readSideSensor() {
-       return digitalRead(TAPE_SENSOR_SIDE) != 0;
+       return digitalRead(TAPE_SENSOR_SIDE) == HIGH;
 }
 
 char readHomeBeacon() {
-       return digitalRead(HOME_BEACON_SENSOR) == 0;
+       return digitalRead(HOME_BEACON_SENSOR) == LOW;
 }
 
 char readFrontSeesaw() {
-       return digitalRead(FRONT_SEESAW_SENSOR) == 0;
+       return digitalRead(FRONT_SEESAW_SENSOR) == LOW;
       
 }
 
 char readSideSeesaw() {
-       return digitalRead(SIDE_SEESAW_SENSOR) == 0;
+       return digitalRead(SIDE_SEESAW_SENSOR) == LOW;
 }
 
 int removeMin(int val[]) {
