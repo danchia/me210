@@ -6,3 +6,6 @@ char readSideSensor();
 char readHomeBeacon();
 char readFrontSeesaw();
 char readSideSeesaw();
+
+int removeMean(int val[]);
+int getLinePos(int val[]);

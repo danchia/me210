@@ -2,14 +2,15 @@
 // basically constants such as pinouts, and various params
 // for tweaking
 
+#pragma once
+
 //
-// General Constants
+// General Constants and params
 //
 
 #define GAME_TIMEOUT_MSEC 120000		// two minutes
 
-
-
+#define LINE_POS_SCALE 100
 
 //
 // Timers

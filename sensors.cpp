@@ -34,6 +34,24 @@ char readSideSeesaw() {
        return digitalRead(SIDE_SEESAW_SENSOR) == 0;
 }
 
+int removeMean(int val[]) {
+	int min = val[0];
+	
+	if (val[1] < min)
+		min = val[1];
+	if (val[2] < min)
+		min = val[2];
 
+	val[0] -= min;
+	val[1] -= min;
+	val[2] -= min;
 
+	return min;
+}
 
+int getLinePos(int val[]) {
+	int num = -val[0] + val[2];
+	long denom = val[0] + val[1] + val[2];
+
+	return (int)(((long)num * LINE_POS_SCALE) / denom);
+}
