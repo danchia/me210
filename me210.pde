@@ -13,6 +13,7 @@ void setup() {
 	// initialize modules
 	globalTimeoutSetup();
 	motorSetup();
+	pinMode(13, OUTPUT);
 
 	// initialize serial
 	Serial.begin(57600);
@@ -22,5 +23,6 @@ void setup() {
 	startLineFollowing(190);
 }
 void loop() {
+//	digitalWrite(13, (readSideSensor() ? HIGH: LOW));
 	followLine(190);
 }
