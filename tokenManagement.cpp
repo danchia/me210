@@ -32,7 +32,7 @@ When      Who  Description
 #define GOING_HOME 2
 #define AT_REST 3
 #define DEGREE_FRACTION 1
-#define DELTA 1
+#define DELTA 2
 
 #define MAX_BUCKETS 3
 #define FORTYFIVE 45
@@ -63,10 +63,10 @@ void depositTokens(void) {
   nextBucketAngle = evaluateBucketAngle(bucketNo + 1);
   if (nextBucketAngle == HOME) {
     servoState = GOING_HOME; // sets servo to return to home position
-    Serial.println("Servo going home (deposit)");
+    ////Serial.println("Servo going home (deposit)");
   } else {
     servoState = GOING_FORWARD;
-    Serial.println("Servo depositing");
+    ////Serial.println("Servo depositing");
   }
 } 
 
@@ -125,22 +125,22 @@ void updateServo(void) {
     switch (servoState) {
       case GOING_FORWARD:
         servoAngle = servoAngle + DELTA;
-        Serial.println(servoAngle);
+        ////Serial.println(servoAngle);
         if (servoAngle > nextBucketAngle) {
           bucketNo = bucketNo + 1;
           servoAngle = nextBucketAngle;
           servoState = AT_REST;
-          Serial.println("reached rest");
+          //Serial.println("reached rest");
         }
         break;
       case GOING_HOME:
         servoAngle = servoAngle - DELTA;
-        Serial.println(servoAngle);
+        //Serial.println(servoAngle);
         if (servoAngle < 0) {
           bucketNo = HOME;
           servoAngle = HOME;
           servoState = AT_REST;
-          Serial.println("reached rest");
+          //Serial.println("reached rest");
         }
         break;
       case AT_REST: 
@@ -148,7 +148,7 @@ void updateServo(void) {
         // do nothing
         break;
     }
-    //Serial.println(servoAngle>>DEGREE_FRACTION);
+    ////Serial.println(servoAngle>>DEGREE_FRACTION);
     servo.write(servoAngle>>DEGREE_FRACTION);
     TMRArd_InitTimer(SERVO_TIMER, SERVO_TIMER_LENGTH);
   }

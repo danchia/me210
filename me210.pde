@@ -10,10 +10,10 @@
 #include <Servo.h>
 #include <Timers.h>
 
-#define FWD_SPEED 200
-#define SLOW_SPEED 120
+#define FWD_SPEED 180
+#define SLOW_SPEED 110
 
-#define TURN_SPEED 165
+#define TURN_SPEED 160
 
 void setup() {
 	// initialize modules
@@ -27,6 +27,31 @@ void setup() {
 	Serial.println("Initialized");
 
 }
+
+// function for determining side of board
+// use blocking code for now
+// returns 1 if right side
+// need to recalibrate
+char findSide() {
+	setMotion(0, SEESAW_HOME_TURN_SPD);
+
+	while(!readFrontSeesaw());
+	unsigned long startTime = millis();
+	//Serial.println("Seesaw");
+	while(!readHomeBeacon());
+	unsigned long endTime = millis() - startTime;
+	//Serial.println("Home");
+	//Serial.println(endTime);
+	setMotion(0,0);
+
+	if (endTime > SEESAW_HOME_TIME_THRES) {
+		digitalWrite(13, HIGH);
+		return 1;
+	}
+	else
+		return 0;
+}
+
 void loop() {
 	for (int i = 0; i < 200; i++) {
 		updateServo();
@@ -40,9 +65,9 @@ void loop() {
 	setMotion(SLOW_SPEED,0);
 	while(!readSideSensor());	// wait for turn sensor
 	setMotion(-255,0);
-	delay(20);
+	delay(60);
 	setMotion(0,0);
-	delay(30);
+	delay(60);
 	//jerk stop
 	//turn!
 	setMotion(0, -TURN_SPEED);
@@ -51,9 +76,9 @@ void loop() {
 		readFrontSensors(val);
 	}while(val[0] < LINE_SENSOR_MIN_THRES);
 	setMotion(0, 255);
-	delay(20);
+	delay(70);
 	setMotion(0,0);
-	delay(50);
+	delay(70);
 	startLineFollowing(FWD_SPEED);
 
 	char token = 0;
@@ -61,9 +86,9 @@ void loop() {
 	while(followLine(FWD_SPEED) == LINE_FOLLOW_OK) {
 		if (readSideSeesaw() && !token) {
 			setMotion(-255,0);
-			delay(20);
+			delay(40);
 			setMotion(0,0);
-			delay(30);
+			delay(50);
 			depositTokens();
 			for (int i = 0; i < 200; i++) {
 				updateServo();
@@ -71,20 +96,11 @@ void loop() {
 			}
 			
 			token = 1;
+			startLineFollowing(FWD_SPEED);
 		}
+
+		updateServo();
 	}
 	setMotion(0, 0);
-//	setMotion(0, 210);
-//	while(!readFrontSeesaw());
-//	unsigned long startTime = millis();
-//	//Serial.println("Seesaw");
-//	while(!readHomeBeacon());
-//	unsigned long endTime = millis() - startTime;
-//	//Serial.println("Home");
-//	//Serial.println(endTime);
-//	if (endTime > 1100)
-//		digitalWrite(13, HIGH);
-//
-//	setMotion(0,0);
 	while(1);
 }

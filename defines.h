@@ -9,11 +9,12 @@
 //
 
 #define SEESAW_HOME_TIME_THRES 1100		// time threshold, from seeing seesaw to home beacon
+#define SEESAW_HOME_TURN_SPD 120
 
 #define GAME_TIMEOUT_MSEC 120000		// two minutes
 
-#define LINE_KP 6		// * 1/8
-#define LINE_KD 10	
+#define LINE_KP 4		// * 1/8
+#define LINE_KD 15	
 #define LINE_POS_SCALE 100
 #define LINE_SENSOR_MIN_THRES 800
 #define LINE_SENSOR_MAX_THRES 100
