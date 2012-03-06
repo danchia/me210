@@ -5,6 +5,19 @@
 #endif
 #include "defines.h"
 
+void sensorSetup() {
+  digitalWrite(WALL_SENSOR,HIGH); //Pull up the wall sensor to be on by default...
+  digitalWrite(TOKENS_LOADED,HIGH); //Pull up token toggle
+}
+
+char testWallSensor(void) {
+  return digitalRead(WALL_SENSOR) == LOW;
+}
+
+char testTokensLoadedSensor(void) {
+  return digitalRead(TOKENS_LOADED) == LOW;
+}
+
 void readFrontSensors(int values[]) {
        values[0] = analogRead(TAPE_SENSOR_FRONT_LEFT);  
        values[1] = analogRead(TAPE_SENSOR_FRONT_CENTER); 

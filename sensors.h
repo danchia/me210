@@ -1,5 +1,8 @@
 #pragma once
 
+void sensorSetup();
+char testWallSensor(void);
+char testTokensLoadedSensor(void);
 void readFrontSensors(int values[]);
 void readBackSensors(int values[]);
 char readSideSensor();

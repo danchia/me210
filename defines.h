@@ -32,6 +32,10 @@
 // Pins
 //
 
+//TOGGLE SWITCHES
+#define WALL_SENSOR 8
+#define TOKENS_LOADED 9
+
 
 // MOTOR
 #define MOTOR_LEFT_DIR 2
