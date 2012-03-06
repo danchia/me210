@@ -8,8 +8,7 @@
 // General Constants and params
 //
 
-#define SEESAW_HOME_TIME_THRES 1100		// time threshold, from seeing seesaw to home beacon
-#define SEESAW_HOME_TURN_SPD 120
+#define SEESAW_HOME_TURN_SPD 190
 
 #define GAME_TIMEOUT_MSEC 120000		// two minutes
 
@@ -28,8 +27,9 @@
 //
 
 #define MOTOR_TIMER 1
-#define SERVO_TIMER 3
 #define LINE_FOLLOW_TIMER 2
+#define SERVO_TIMER 3
+#define MAIN_TIMER 4
 
 
 

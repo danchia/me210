@@ -6,18 +6,24 @@
 #include "motor.h"
 #include "lineMotions.h"
 #include "tokenManagement.h"
+#include "states.h"
 
 #include <Servo.h>
 #include <Timers.h>
 
 #define FWD_SPEED 210
-#define SLOW_SPEED 180
+#define SLOW_SPEED 115
 
-#define TURN_SPEED 170
+#define PIVOT_SPEED 185
+
+static MainState state, nextState;	// next state used for helper states combinations (factored FSMs)
 
 void setup() {
+	// init state machine
+	state = STATE_START;
+
 	// initialize modules
-	globalTimeoutSeup();
+	globalTimeoutSetup();
 	motorSetup();
 	initializeServo();
 	pinMode(LED_PIN, OUTPUT);
@@ -25,83 +31,101 @@ void setup() {
 	// initialize serial
 	Serial.begin(57600);
 	Serial.println("Initialized");
-
 }
 
-// function for determining side of board
-// use blocking code for now
-// returns 1 if right side
-// need to recalibrate
-char findSide() {
-	setMotion(0, SEESAW_HOME_TURN_SPD);
-
-	while(!readFrontSeesaw());
-	unsigned long startTime = millis();
-	//Serial.println("Seesaw");
-	while(!readHomeBeacon());
-	unsigned long endTime = millis() - startTime;
-	//Serial.println("Home");
-	//Serial.println(endTime);
-	setMotion(0,0);
-
-	if (endTime > SEESAW_HOME_TIME_THRES) {
-		digitalWrite(13, HIGH);
-		return 1;
-	}
-	else
-		return 0;
+// stops the robot, and when done transition to state next
+void stopRobot(MainState next) {
+	state = STATE_STOPPING;
+	stopMotion();
+	nextState = next;
 }
 
 void loop() {
-	for (int i = 0; i < 50; i++) {
-		updateServo();
-		delay(15);
-	}
-
-	// test line following
-	startLineFollowing(FWD_SPEED);
-
-	while(followLine(FWD_SPEED) == LINE_FOLLOW_OK) updateMotor();	// follow line
-	setMotion(SLOW_SPEED,0);
-	while(!readSideSensor()) updateMotor();	// wait for turn sensor
-	stopMotion();
-	while(!motorDoneStop()) updateMotor();
-
-	//turn!
-	setMotion(0, -TURN_SPEED);
+	static unsigned long time1, time2, time3;
 	int val[3];
-	do {
-		readFrontSensors(val);
-		updateMotor();
-	}while(val[0] < LINE_SENSOR_MIN_THRES);
 
-	stopMotion();
-	while(!motorDoneStop()) updateMotor();
+	// do FSM update
+	switch(state) {
+		case STATE_START:
+			setMotion(0, SEESAW_HOME_TURN_SPD);
+			state = STATE_FIND_SIDE_HOME1;
+			break;
 
-	startLineFollowing(FWD_SPEED);
-
-	char token = 0;
-
-	while(followLine(FWD_SPEED) == LINE_FOLLOW_OK) {
-		if (readSideSeesaw() && !token) {
-			stopMotion();
-			while(!motorDoneStop()) updateMotor();
-
-			depositTokens();
-			for (int i = 0; i < 200; i++) {
-				updateMotor();
-				updateServo();
-				delay(15);
+		case STATE_FIND_SIDE_HOME1:
+			if (readHomeBeacon()) {
+				time1 = millis();
+				state = STATE_FIND_SIDE_SEESAW;
 			}
+			break;
 			
-			token = 1;
-			startLineFollowing(FWD_SPEED);
-		}
+		case STATE_FIND_SIDE_SEESAW:
+			if (readFrontSeesaw()) {
+				time2 = millis();
+				state = STATE_FIND_SIDE_HOME2;
+			}
+			break;
 
-		updateServo();
+		case STATE_FIND_SIDE_HOME2:
+			if (readHomeBeacon()) {
+				time3 = millis();
+
+				// check to see which side we're on
+				if (time2 - time1 < time3 - time2) { 	// right side
+					state = STATE_STARTED_RIGHT1;
+					digitalWrite(LED_PIN, HIGH);
+
+					//setMotion(0,PIVOT_SPEED);
+					setMotion(0,0);
+					TMRArd_InitTimer(MAIN_TIMER, 100);
+				}
+				else {	// left side
+					state = STATE_STARTED_LEFT1;
+
+					setMotion(0,-PIVOT_SPEED);
+					TMRArd_InitTimer(MAIN_TIMER, 100);
+				}
+			}
+			break;
+
+		case STATE_STARTED_LEFT1:
+			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
+				stopRobot(STATE_STARTED_LEFT2);
+			}
+			break;
+
+		case STATE_STARTED_LEFT2:
+			setMotion(FWD_SPEED,0);
+			state = STATE_STARTED_LEFT3;
+			break;
+
+		case STATE_STARTED_LEFT3:
+			readFrontSensors(val);
+			if (hasLine(val))
+				TMRArd_InitTimer(MAIN_TIMER, 100);
+				state = STATE_STARTED_LEFT4;
+			break;
+
+		case STATE_STARTED_LEFT4:
+			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
+				adjustMotion(50, -140);
+				state = STATE_STARTED_LEFT5;
+			}
+			break;
+
+		case STATE_STARTED_LEFT5:
+			readFrontSensors(val);
+			if (hasLine(val)) {
+				// start line following
+			}
+			break;
+
+		case STATE_STOPPING:
+			if (motorDoneStop())
+				state = nextState;
+			break;
 	}
-	stopMotion();
-	while(!motorDoneStop()) updateMotor();
 
-	while(1) updateMotor();
+	// call periodic functions
+	updateServo();
+	updateMotor();
 }
