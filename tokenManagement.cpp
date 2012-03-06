@@ -47,6 +47,7 @@ static int servoAngle;
 static int bucketNo;
 static int servoState;
 static int nextBucketAngle;
+static int depositingTokens = 0; // 1 for true, 0 for false
 static Servo servo;
 
 /*----------------------------- Module Code --------------------------------*/
@@ -66,6 +67,7 @@ void depositTokens(void) {
     ////Serial.println("Servo going home (deposit)");
   } else {
     servoState = GOING_FORWARD;
+    depositingTokens = 1;
     ////Serial.println("Servo depositing");
   }
 } 
@@ -130,6 +132,7 @@ void updateServo(void) {
           bucketNo = bucketNo + 1;
           servoAngle = nextBucketAngle;
           servoState = AT_REST;
+          depositingTokens = 0;
           //Serial.println("reached rest");
         }
         break;
@@ -180,4 +183,15 @@ void initializeServo(void) {
 int bucketsLeft(void) {
   int numBucketsLeft = MAX_BUCKETS - bucketNo;
   return numBucketsLeft;
+}
+
+/******************************************************************************
+  Function:    isServoDepositingTokens
+  Contents:    Returns 1 if servo is current depositing tokens, 0 if not
+  Parameters:  None
+  Returns:     1 or 0 depending whether servo is depositing tokens
+  Notes:
+******************************************************************************/
+int isServoDepositingTokens(void) {
+  return depositingTokens;
 }
