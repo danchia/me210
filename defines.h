@@ -20,7 +20,7 @@
 #define LINE_FOLLOW_UPDATE_PERIOD 2	// 2ms period, 500Hz control rate
 
 #define MOTOR_FULL_POWER_TIME 100	// time to give motors full power initially (msecs)
-#define MOTOR_STOP_TIME 70	// time to give motors full power reverse for stop (msecs)
+#define MOTOR_STOP_TIME 60	// time to give motors full power reverse for stop (msecs)
 
 //
 // Timers

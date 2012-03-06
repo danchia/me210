@@ -12,6 +12,12 @@ typedef enum {
 	STATE_STARTED_LEFT3,
 	STATE_STARTED_LEFT4,
 	STATE_STARTED_LEFT5,
+	STATE_FOLLOW_HLINE1,
+	STATE_FOLLOW_HLINE2,
+	STATE_FOLLOW_HLINE3,
+	STATE_FOLLOW_HLINE4,
+	STATE_FOLLOW_SLLINE1, 
 
-	STATE_STOPPING		// transition state to wait for robot to stop
+	STATE_STOPPING,		// transition state to wait for robot to stop
+	STATE_IDLE
 } MainState;

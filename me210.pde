@@ -82,7 +82,7 @@ void loop() {
 					state = STATE_STARTED_LEFT1;
 
 					setMotion(0,-PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 100);
+					TMRArd_InitTimer(MAIN_TIMER, 350);
 				}
 			}
 			break;
@@ -100,14 +100,17 @@ void loop() {
 
 		case STATE_STARTED_LEFT3:
 			readFrontSensors(val);
-			if (hasLine(val))
-				TMRArd_InitTimer(MAIN_TIMER, 100);
+			if (hasLine(val)) {
+				//TMRArd_InitTimer(MAIN_TIMER, 100);
+				adjustMotion(100,0);
 				state = STATE_STARTED_LEFT4;
+			}
 			break;
 
 		case STATE_STARTED_LEFT4:
-			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
-				adjustMotion(50, -140);
+			//if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
+			if (readSideSensor()) {
+				adjustMotion(0, -PIVOT_SPEED);
 				state = STATE_STARTED_LEFT5;
 			}
 			break;
@@ -115,13 +118,48 @@ void loop() {
 		case STATE_STARTED_LEFT5:
 			readFrontSensors(val);
 			if (hasLine(val)) {
-				// start line following
+				startLineFollowing(FWD_SPEED);
+				state = STATE_FOLLOW_HLINE1;
 			}
+			break;
+
+		case STATE_FOLLOW_HLINE1:
+			if (followLine(FWD_SPEED) != LINE_FOLLOW_OK) {
+				adjustMotion(SLOW_SPEED, 0);	// assume reached T
+				state = STATE_FOLLOW_HLINE2;
+			}
+			break;
+
+		case STATE_FOLLOW_HLINE2:
+			if (readSideSensor()) {
+				stopRobot(STATE_FOLLOW_HLINE3);
+			}
+			break;
+
+		case STATE_FOLLOW_HLINE3:
+			setMotion(0, -PIVOT_SPEED);
+			state = STATE_FOLLOW_HLINE4;
+			break;
+
+		case STATE_FOLLOW_HLINE4:
+			readFrontSensors(val);
+			if (hasLine(val)) {
+				startLineFollowing(FWD_SPEED);
+				state = STATE_FOLLOW_SLLINE1;
+			}
+			break;
+
+		case STATE_FOLLOW_SLLINE1:
+			followLine(FWD_SPEED);
 			break;
 
 		case STATE_STOPPING:
 			if (motorDoneStop())
 				state = nextState;
+			break;
+
+		case STATE_IDLE:
+			setMotion(0,0);
 			break;
 	}
 
