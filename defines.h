@@ -65,3 +65,6 @@
 
 // SERVO
 #define SERVO_PIN 10
+
+// LED
+#define LED_PIN 13

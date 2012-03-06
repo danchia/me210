@@ -17,10 +17,10 @@
 
 void setup() {
 	// initialize modules
-	globalTimeoutSetup();
+	globalTimeoutSeup();
 	motorSetup();
 	initializeServo();
-	pinMode(13, OUTPUT);
+	pinMode(LED_PIN, OUTPUT);
 
 	// initialize serial
 	Serial.begin(57600);
