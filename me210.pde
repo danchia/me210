@@ -20,9 +20,20 @@ void setup() {
 	Serial.println("Initialized");
 
 	// test line following
-	startLineFollowing(190);
+	//startLineFollowing(190);
 }
 void loop() {
-//	digitalWrite(13, (readSideSensor() ? HIGH: LOW));
-	followLine(190);
+	setMotion(0, 210);
+	while(!readFrontSeesaw());
+	unsigned long startTime = millis();
+	//Serial.println("Seesaw");
+	while(!readHomeBeacon());
+	unsigned long endTime = millis() - startTime;
+	//Serial.println("Home");
+	//Serial.println(endTime);
+	if (endTime > 1100)
+		digitalWrite(13, HIGH);
+
+	setMotion(0,0);
+	while(1);
 }
