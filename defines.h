@@ -20,9 +20,14 @@
 #define LINE_SENSOR_MAX_THRES 100
 #define LINE_FOLLOW_UPDATE_PERIOD 2	// 2ms period, 500Hz control rate
 
+#define MOTOR_FULL_POWER_TIME 100	// time to give motors full power initially (msecs)
+#define MOTOR_STOP_TIME 70	// time to give motors full power reverse for stop (msecs)
+
 //
 // Timers
 //
+
+#define MOTOR_TIMER 1
 #define SERVO_TIMER 3
 #define LINE_FOLLOW_TIMER 2
 
