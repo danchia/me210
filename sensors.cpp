@@ -68,3 +68,12 @@ int getLinePos(int val[]) {
 
 	return (int)(((long)num * LINE_POS_SCALE) / denom);
 }
+
+char hasLine(int rawVal[]) {
+	if (rawVal[0] > LINE_SENSOR_MIN_THRES
+			|| rawVal[1] > LINE_SENSOR_MIN_THRES
+			|| rawVal[2] > LINE_SENSOR_MIN_THRES)
+		return 1;
+	
+	return 0;
+}

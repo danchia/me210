@@ -12,3 +12,4 @@ char readSideSeesaw();
 
 int removeMin(int val[]);
 int getLinePos(int val[]);
+char hasLine(int rawVal[]);
