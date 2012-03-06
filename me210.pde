@@ -75,13 +75,13 @@ void loop() {
 					digitalWrite(LED_PIN, HIGH);
 
 					adjustMotion(0,PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 450);
+					TMRArd_InitTimer(MAIN_TIMER, 250);
 				}
 				else {	// left side
 					state = STATE_STARTED_LEFT1;
 
 					setMotion(0,-PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 400);
+					TMRArd_InitTimer(MAIN_TIMER, 550);
 				}
 			}
 			break;
@@ -186,7 +186,7 @@ void loop() {
 
 		case STATE_FOLLOW_SLLINE1:
 			if (followLine(FWD_SPEED) != LINE_FOLLOW_OK) {
-				// U-turn, end of line
+				// TODO: U-turn, end of line
 				state = STATE_IDLE;
 			}
 
@@ -214,7 +214,7 @@ void loop() {
 			break;
 
 		case STATE_IDLE:
-			setMotion(0,0);
+			adjustMotion(0,0);
 			break;
 	}
 
