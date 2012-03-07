@@ -13,7 +13,7 @@
 #define GAME_TIMEOUT_MSEC 120000		// two minutes
 
 #define LINE_KP 5		// * 1/8
-#define LINE_KD 15	
+#define LINE_KD 12	
 #define LINE_POS_SCALE 100
 #define LINE_SENSOR_MIN_THRES 800
 #define LINE_SENSOR_MAX_THRES 100

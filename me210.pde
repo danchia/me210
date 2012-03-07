@@ -82,13 +82,13 @@ void loop() {
 					digitalWrite(LED_PIN, HIGH);
 
 					adjustMotion(0,PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 50);
+					TMRArd_InitTimer(MAIN_TIMER, 40);
 				}
 				else {	// left side
 					state = STATE_STARTED_LEFT1;
 
 					setMotion(0,-PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 500);
+					TMRArd_InitTimer(MAIN_TIMER, 520);
 				}
 			}
 			break;
@@ -144,7 +144,7 @@ void loop() {
 			break;
 
 		case STATE_STARTED_RIGHT2:
-			setMotion(FWD_SPEED, -1);
+			setMotion(FWD_SPEED, -3);
 			state = STATE_STARTED_RIGHT3;
 			break;
 
