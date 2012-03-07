@@ -20,10 +20,13 @@
 #define TOKEN_DROP_TIME 2500
 
 static MainState state, nextState;	// next state used for helper states combinations (factored FSMs)
+static char sDir;
+static char outOfTokens;
 
 void setup() {
 	// init state machine
 	state = STATE_START;
+	outOfTokens = 0;
 
 	// initialize modules
 	globalTimeoutSetup();
@@ -48,8 +51,8 @@ void stopRobot(MainState next) {
 
 void loop() {
 	static unsigned long time1, time2, time3;
-	static char sDir;
 	int val[3];
+	char followLineRetVal;
 
 	// do FSM update
 	switch(state) {
@@ -214,13 +217,20 @@ void loop() {
 			break;
 
 		case STATE_FOLLOW_SLLINE1:
-			if (readSideSeesaw()) {
+			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
-			if (followLine(FWD_SPEED) == LINE_FOLLOW_NO_LINE) {
+			followLineRetVal = followLine(FWD_SPEED);	
+
+			if (followLineRetVal == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SLLINE2;
+			}
+			else if (outOfTokens && followLineRetVal == LINE_FOLLOW_ALL_LINE) {
+				// go home. yipee!
+				adjustMotion(SLOW_SPEED, 0);
+				state = STATE_HEAD_HOME1;
 			}
 			break;
 
@@ -241,13 +251,20 @@ void loop() {
 			break;
 
 		case STATE_FOLLOW_SRLINE1:
-			if (readSideSeesaw()) {
+			if (readSideSeesaw() && outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
-			if (followLine(-FWD_SPEED) == LINE_FOLLOW_NO_LINE) {
+			followLineRetVal = followLine(-FWD_SPEED);
+
+			if (followLineRetVal == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SRLINE2;
+			}
+			else if (outOfTokens && followLineRetVal == LINE_FOLLOW_ALL_LINE) {
+				// go home. yipee!
+				adjustMotion(-SLOW_SPEED, 0);
+				state = STATE_HEAD_HOME1;
 			}
 			break;
 
@@ -267,6 +284,9 @@ void loop() {
 			depositTokens();			
 			TMRArd_InitTimer(MAIN_TIMER, TOKEN_DROP_TIME);
 			state = STATE_DISPENSE_TOKEN2;
+
+			if (bucketsLeft() == 0)
+				outOfTokens = 1;
 			break;
 
 		case STATE_DISPENSE_TOKEN2:
@@ -276,6 +296,54 @@ void loop() {
 				else
 					state = STATE_FOLLOW_SRLINE0;
 			}
+			break;
+
+		case STATE_HEAD_HOME1:
+			if (readSideSensor()) {
+				stopRobot(STATE_HEAD_HOME2);
+			}
+			break;
+
+		case STATE_HEAD_HOME2:
+			setMotion(0, -PIVOT_SPEED);
+			TMRArd_InitTimer(MAIN_TIMER, 200);
+			state = STATE_HEAD_HOME3;
+			break;
+
+		case STATE_HEAD_HOME3:
+			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED)
+				state = STATE_HEAD_HOME4;
+			break;
+
+		case STATE_HEAD_HOME4:
+			readFrontSensors(val);
+			if (hasLine(val))
+				stopRobot(STATE_HEAD_HOME5);
+			break;
+		
+		case STATE_HEAD_HOME5:
+			setMotion(FWD_SPEED, 0);
+			goHome();
+			state = STATE_HEAD_HOME6;
+			break;
+
+		case STATE_HEAD_HOME6:
+			if (testWallSensor()) {
+				stopRobot(STATE_WAIT_TOKEN_LOAD);
+			}
+
+			if (testTokensLoadedSensor()) {
+				stopRobot(STATE_TOKEN_LOADED);
+			}
+			break;
+
+		case STATE_WAIT_TOKEN_LOAD:
+			if (testTokensLoadedSensor())
+				state = STATE_TOKEN_LOADED;
+			break;
+
+		case STATE_TOKEN_LOADED:
+			// TODO...
 			break;
 
 		case STATE_STOPPING1:
