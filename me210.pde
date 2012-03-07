@@ -12,12 +12,18 @@
 #include <Timers.h>
 
 #define FWD_SPEED 150
-#define SLOW_SPEED 90
+#define FWD_SPEED2 160
+#define SLOW_SPEED 110
 
 #define PIVOT_SPEED 140
 
-#define END_OF_LINE_TIME 300
+#define END_OF_LINE_TIME 400
+#define END_OF_LINE_TIME_RIGHT 500
 #define TOKEN_DROP_TIME 2500
+
+#define S_LEFT 0
+#define S_RIGHT 1
+
 
 static MainState state, nextState;	// next state used for helper states combinations (factored FSMs)
 static char sDir;
@@ -25,13 +31,16 @@ static char outOfTokens;
 
 void setup() {
 	// init state machine
-	state = STATE_START;
+	//state = STATE_START;
+	state = STATE_FOLLOW_SRLINE0;
 	outOfTokens = 0;
+	sDir = S_RIGHT;
 
 	// initialize modules
 	globalTimeoutSetup();
 	motorSetup();
 	initializeServo();
+	sensorSetup();
 	pinMode(LED_PIN, OUTPUT);
 
 	// initialize serial
@@ -45,9 +54,6 @@ void stopRobot(MainState next) {
 	stopMotion();
 	nextState = next;
 }
-
-#define S_LEFT 0
-#define S_RIGHT 1
 
 void loop() {
 	static unsigned long time1, time2, time3;
@@ -85,13 +91,13 @@ void loop() {
 					digitalWrite(LED_PIN, HIGH);
 
 					adjustMotion(0,PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 40);
+					TMRArd_InitTimer(MAIN_TIMER, 20);
 				}
 				else {	// left side
 					state = STATE_STARTED_LEFT1;
 
 					setMotion(0,-PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 520);
+					TMRArd_InitTimer(MAIN_TIMER, 530);
 				}
 			}
 			break;
@@ -111,7 +117,7 @@ void loop() {
 			readFrontSensors(val);
 			if (hasLine(val)) {
 				//TMRArd_InitTimer(MAIN_TIMER, 100);
-				adjustMotion(30, 0);
+				adjustMotion(-30, 0);
 				state = STATE_STARTED_LEFT4;
 			}
 			break;
@@ -119,6 +125,7 @@ void loop() {
 		case STATE_STARTED_LEFT4:
 			//if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 			if (readSideSensor()) {
+				adjustMotion(10,0);	// hack to get kick in right direction
 				stopRobot(STATE_STARTED_LEFT4A);
 			}
 			break;
@@ -155,7 +162,7 @@ void loop() {
 			readFrontSensors(val);
 			if (hasLine(val)) {
 				//TMRArd_InitTimer(MAIN_TIMER, 100);
-				adjustMotion(30, 0);
+				adjustMotion(-30, 0);
 				state = STATE_STARTED_RIGHT4;
 			}
 			break;
@@ -163,6 +170,7 @@ void loop() {
 		case STATE_STARTED_RIGHT4:
 			//if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 			if (readSideSensor()) {
+				adjustMotion(10,0);	// hack to get kick in right direction
 				stopRobot(STATE_STARTED_RIGHT4A);
 			}
 			break;
@@ -205,14 +213,14 @@ void loop() {
 		case STATE_FOLLOW_HLINE4:
 			readFrontSensors(val);
 			if (hasLine(val)) {
-				startLineFollowing(FWD_SPEED);
+				startLineFollowing(FWD_SPEED2);
 				state = STATE_FOLLOW_SLLINE1;
 				sDir = S_LEFT;	
 			}
 			break;
 
 		case STATE_FOLLOW_SLLINE0:
-			startLineFollowing(FWD_SPEED);
+			startLineFollowing(FWD_SPEED2);
 			state = STATE_FOLLOW_SLLINE1;
 			break;
 
@@ -221,13 +229,14 @@ void loop() {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
-			followLineRetVal = followLine(FWD_SPEED);	
+			followLineRetVal = followLine(FWD_SPEED2);	
 
 			if (followLineRetVal == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SLLINE2;
 			}
-			else if (outOfTokens && followLineRetVal == LINE_FOLLOW_ALL_LINE) {
+
+			if (outOfTokens && readSideSensor()) {
 				// go home. yipee!
 				adjustMotion(SLOW_SPEED, 0);
 				state = STATE_HEAD_HOME1;
@@ -235,7 +244,7 @@ void loop() {
 			break;
 
 		case STATE_FOLLOW_SLLINE2:
-			if (readSideSeesaw()) {
+			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
@@ -246,30 +255,31 @@ void loop() {
 			break;
 
 		case STATE_FOLLOW_SRLINE0:
-			startLineFollowing(-FWD_SPEED);
+			startLineFollowing(-FWD_SPEED2);
 			state = STATE_FOLLOW_SRLINE1;
 			break;
 
 		case STATE_FOLLOW_SRLINE1:
-			if (readSideSeesaw() && outOfTokens) {
+			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
-			followLineRetVal = followLine(-FWD_SPEED);
+			followLineRetVal = followLine(-FWD_SPEED2);
 
 			if (followLineRetVal == LINE_FOLLOW_NO_LINE) {
-				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
+				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME_RIGHT); // continue for a while before going around 
 				state = STATE_FOLLOW_SRLINE2;
 			}
-			else if (outOfTokens && followLineRetVal == LINE_FOLLOW_ALL_LINE) {
+			
+			if (outOfTokens && readSideSensor()) {
 				// go home. yipee!
-				adjustMotion(-SLOW_SPEED, 0);
-				state = STATE_HEAD_HOME1;
+				stopRobot(STATE_HEAD_HOME2);
+				//state = STATE_HEAD_HOME1;
 			}
 			break;
 
 		case STATE_FOLLOW_SRLINE2:
-			if (readSideSeesaw()) {
+			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
@@ -277,7 +287,6 @@ void loop() {
 				stopRobot(STATE_FOLLOW_SLLINE0);
 				sDir = S_LEFT;
 			}
-
 			break;
 
 		case STATE_DISPENSE_TOKEN1:
@@ -291,7 +300,9 @@ void loop() {
 
 		case STATE_DISPENSE_TOKEN2:
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
-				if (sDir == S_LEFT)
+				if (readSideSeesaw() && !outOfTokens)
+					state = STATE_DISPENSE_TOKEN1;
+				else if (sDir == S_LEFT)
 					state = STATE_FOLLOW_SLLINE0;
 				else
 					state = STATE_FOLLOW_SRLINE0;
@@ -306,7 +317,7 @@ void loop() {
 
 		case STATE_HEAD_HOME2:
 			setMotion(0, -PIVOT_SPEED);
-			TMRArd_InitTimer(MAIN_TIMER, 200);
+			TMRArd_InitTimer(MAIN_TIMER, 300);
 			state = STATE_HEAD_HOME3;
 			break;
 
@@ -322,12 +333,14 @@ void loop() {
 			break;
 		
 		case STATE_HEAD_HOME5:
-			setMotion(FWD_SPEED, 0);
+			startLineFollowing(FWD_SPEED);
 			goHome();
 			state = STATE_HEAD_HOME6;
 			break;
 
 		case STATE_HEAD_HOME6:
+			followLine(FWD_SPEED);
+
 			if (testWallSensor()) {
 				stopRobot(STATE_WAIT_TOKEN_LOAD);
 			}
@@ -345,6 +358,7 @@ void loop() {
 		case STATE_TOKEN_LOADED:
 			startLineFollowing(-FWD_SPEED);
 			state = STATE_FOLLOW_B_HLINE1;
+			outOfTokens = 0;
 			break;
 
 		case STATE_FOLLOW_B_HLINE1:

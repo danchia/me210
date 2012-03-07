@@ -34,7 +34,7 @@ When      Who  Description
 #define DEGREE_FRACTION 1
 #define DELTA 2
 
-#define MAX_BUCKETS 3
+#define MAX_BUCKETS 1
 #define FORTYFIVE 45
 #define NINETY 100
 #define ONETHIRTYFIVE 150
@@ -60,7 +60,8 @@ static Servo servo;
   Notes:
 ******************************************************************************/
 void depositTokens(void) {
-  nextBucketAngle = evaluateBucketAngle(bucketNo + 1);
+  bucketNo = bucketNo + 1;
+  nextBucketAngle = evaluateBucketAngle(bucketNo);
   if (nextBucketAngle == HOME) {
     servoState = GOING_HOME; // sets servo to return to home position
     ////Serial.println("Servo going home (deposit)");
@@ -80,6 +81,7 @@ void depositTokens(void) {
 ******************************************************************************/
 void goHome(void) {
   servoState = GOING_HOME;
+  bucketNo = HOME;
 } 
   
 
@@ -127,7 +129,6 @@ void updateServo(void) {
         servoAngle = servoAngle + DELTA;
         ////Serial.println(servoAngle);
         if (servoAngle > nextBucketAngle) {
-          bucketNo = bucketNo + 1;
           servoAngle = nextBucketAngle;
           servoState = AT_REST;
           //Serial.println("reached rest");
@@ -137,7 +138,6 @@ void updateServo(void) {
         servoAngle = servoAngle - DELTA;
         //Serial.println(servoAngle);
         if (servoAngle < 0) {
-          bucketNo = HOME;
           servoAngle = HOME;
           servoState = AT_REST;
           //Serial.println("reached rest");
