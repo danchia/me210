@@ -34,7 +34,7 @@ When      Who  Description
 #define DEGREE_FRACTION 1
 #define DELTA 2
 
-#define MAX_BUCKETS 1
+#define MAX_BUCKETS 3
 #define FORTYFIVE 45
 #define NINETY 100
 #define ONETHIRTYFIVE 150

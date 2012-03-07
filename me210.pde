@@ -13,7 +13,7 @@
 
 #define FWD_SPEED 150
 #define FWD_SPEED2 160
-#define SLOW_SPEED 110
+#define SLOW_SPEED 90
 
 #define PIVOT_SPEED 140
 
@@ -31,10 +31,10 @@ static char outOfTokens;
 
 void setup() {
 	// init state machine
-	//state = STATE_START;
-	state = STATE_FOLLOW_SRLINE0;
+	state = STATE_START;
 	outOfTokens = 0;
-	sDir = S_RIGHT;
+	//state = STATE_FOLLOW_SRLINE0;
+	//sDir = S_RIGHT;
 
 	// initialize modules
 	globalTimeoutSetup();
