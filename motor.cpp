@@ -93,9 +93,13 @@ void stopMotion() {
 	analogWrite(MOTOR_LEFT_PWM, 255);
 	analogWrite(MOTOR_RIGHT_PWM, 255);
 
+	// set stop timer
+	if (abs(leftSpeed-rightSpeed) > 200)	// should be a turn
+		TMRArd_InitTimer(MOTOR_TIMER, MOTOR_STOP_TIME_TURN);
+	else
+		TMRArd_InitTimer(MOTOR_TIMER, MOTOR_STOP_TIME_FWD);
+
 	leftSpeed = 0;
 	rightSpeed = 0;
 
-	// set stop timer
-	TMRArd_InitTimer(MOTOR_TIMER, MOTOR_STOP_TIME);
 }

@@ -64,10 +64,7 @@ char followLine(int spd) {
 		retVal = LINE_FOLLOW_OK;
 	}
 
-	if (spd > 0)
-		adjustMotion(spd, -correction);
-	else
-		adjustMotion(-spd, -correction);
+	adjustMotion(spd, -correction);
 		
 	oldError = error;
 

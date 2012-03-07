@@ -8,19 +8,21 @@
 // General Constants and params
 //
 
-#define SEESAW_HOME_TURN_SPD 190
+#define SEESAW_HOME_TURN_SPD 140
 
 #define GAME_TIMEOUT_MSEC 120000		// two minutes
 
-#define LINE_KP 6		// * 1/8
-#define LINE_KD 15	
+#define LINE_KP 5		// * 1/8
+#define LINE_KD 12	
 #define LINE_POS_SCALE 100
 #define LINE_SENSOR_MIN_THRES 800
 #define LINE_SENSOR_MAX_THRES 100
 #define LINE_FOLLOW_UPDATE_PERIOD 2	// 2ms period, 500Hz control rate
 
-#define MOTOR_FULL_POWER_TIME 100	// time to give motors full power initially (msecs)
-#define MOTOR_STOP_TIME 65	// time to give motors full power reverse for stop (msecs)
+#define MOTOR_FULL_POWER_TIME 5	// time to give motors full power initially (msecs)
+#define MOTOR_STOP_TIME_TURN 20	// time to give motors full power reverse for stop (msecs)
+#define MOTOR_STOP_TIME_FWD 45	// time to give motors full power reverse for stop (msecs)
+#define STOP_PAUSE_TIME 500
 
 //
 // Timers
