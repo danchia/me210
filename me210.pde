@@ -343,7 +343,26 @@ void loop() {
 			break;
 
 		case STATE_TOKEN_LOADED:
-			// TODO...
+			startLineFollowing(-FWD_SPEED);
+			state = STATE_FOLLOW_B_HLINE1;
+			break;
+
+		case STATE_FOLLOW_B_HLINE1:
+			if (followLine(-FWD_SPEED) != LINE_FOLLOW_OK) {
+				adjustMotion(-SLOW_SPEED, 0); // assume reached T
+				state = STATE_FOLLOW_B_HLINE2;
+			}
+			break;
+
+		case STATE_FOLLOW_B_HLINE2:
+			if (readSideSensor()) {
+				stopRobot(STATE_FOLLOW_B_HLINE3);
+			}
+			break;
+
+		case STATE_FOLLOW_B_HLINE3:
+			setMotion(0, -PIVOT_SPEED);
+			state = STATE_FOLLOW_HLINE4;
 			break;
 
 		case STATE_STOPPING1:
