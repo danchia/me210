@@ -15,7 +15,7 @@
 #define FWD_SPEED2 160
 #define SLOW_SPEED 90
 
-#define PIVOT_SPEED 140
+#define PIVOT_SPEED 145
 
 #define END_OF_LINE_TIME 400
 #define END_OF_LINE_TIME_RIGHT 500
@@ -213,10 +213,14 @@ void loop() {
 		case STATE_FOLLOW_HLINE4:
 			readFrontSensors(val);
 			if (hasLine(val)) {
-				startLineFollowing(FWD_SPEED2);
-				state = STATE_FOLLOW_SLLINE1;
-				sDir = S_LEFT;	
+				stopRobot(STATE_FOLLOW_HLINE5);
 			}
+			break;
+
+		case STATE_FOLLOW_HLINE5:
+			startLineFollowing(FWD_SPEED2);
+			state = STATE_FOLLOW_SLLINE1;
+			sDir = S_LEFT;	
 			break;
 
 		case STATE_FOLLOW_SLLINE0:
