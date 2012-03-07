@@ -16,7 +16,8 @@
 
 #define PIVOT_SPEED 140
 
-#define END_OF_LINE_TIME 100
+#define END_OF_LINE_TIME 300
+#define TOKEN_DROP_TIME 2500
 
 static MainState state, nextState;	// next state used for helper states combinations (factored FSMs)
 
@@ -81,7 +82,7 @@ void loop() {
 					digitalWrite(LED_PIN, HIGH);
 
 					adjustMotion(0,PIVOT_SPEED);
-					TMRArd_InitTimer(MAIN_TIMER, 250);
+					TMRArd_InitTimer(MAIN_TIMER, 50);
 				}
 				else {	// left side
 					state = STATE_STARTED_LEFT1;
@@ -217,7 +218,7 @@ void loop() {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
-			if (followLine(FWD_SPEED) != LINE_FOLLOW_OK) {
+			if (followLine(FWD_SPEED) == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SLLINE2;
 			}
@@ -244,7 +245,7 @@ void loop() {
 				stopRobot(STATE_DISPENSE_TOKEN1);
 			}
 
-			if (followLine(-FWD_SPEED) != LINE_FOLLOW_OK) {
+			if (followLine(-FWD_SPEED) == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SRLINE2;
 			}
@@ -264,7 +265,7 @@ void loop() {
 
 		case STATE_DISPENSE_TOKEN1:
 			depositTokens();			
-			TMRArd_InitTimer(MAIN_TIMER, 3000);
+			TMRArd_InitTimer(MAIN_TIMER, TOKEN_DROP_TIME);
 			state = STATE_DISPENSE_TOKEN2;
 			break;
 
