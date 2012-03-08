@@ -15,7 +15,6 @@ static int oldError;
 void startLineFollowing(int spd) {
 	oldError = 0;
 	setMotion(spd, 0);
-	followLine(spd);
 	TMRArd_InitTimer(LINE_FOLLOW_TIMER, LINE_FOLLOW_UPDATE_PERIOD);
 }
 

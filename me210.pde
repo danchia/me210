@@ -12,13 +12,13 @@
 #include <Timers.h>
 
 #define FWD_SPEED 150
-#define FWD_SPEED2 160
-#define SLOW_SPEED 90
+#define FWD_SPEED2 165
+#define SLOW_SPEED 115
 
-#define PIVOT_SPEED 145
+#define PIVOT_SPEED 155
 
-#define END_OF_LINE_TIME 400
-#define END_OF_LINE_TIME_RIGHT 480
+#define END_OF_LINE_TIME 300
+#define END_OF_LINE_TIME_RIGHT 450
 #define TOKEN_DROP_TIME 2500
 
 #define PIVOT_LINE_CLEAR_TIME 500
@@ -28,7 +28,7 @@
 
 
 static MainState state, nextState;	// next state used for helper states combinations (factored FSMs)
-static char sDir;
+static char sDir, crossedMiddle;
 static char outOfTokens;
 
 void testLineSensor() {
@@ -57,8 +57,8 @@ void setup() {
 	// init state machine
 	state = STATE_START;
 	outOfTokens = 0;
-	state = STATE_FOLLOW_SLLINE0;
-	sDir = S_LEFT;
+	//state = STATE_FOLLOW_SLLINE0;
+	//sDir = S_LEFT;
 	//state = STATE_FOLLOW_SRLINE0;
 	//sDir = S_RIGHT;
 
@@ -87,6 +87,10 @@ void loop() {
 	static unsigned long time1, time2, time3;
 	int val[3];
 	char followLineRetVal;
+
+	if (globalTimeout()) {
+		state = STATE_IDLE;
+	}
 
 	// do FSM update
 	switch(state) {
@@ -171,7 +175,7 @@ void loop() {
 			break;
 
 		case STATE_STARTED_LEFT6:
-			startLineFollowing(FWD_SPEED);
+			startLineFollowing(FWD_SPEED2);
 			state = STATE_FOLLOW_HLINE1;
 			break;
 
@@ -216,12 +220,12 @@ void loop() {
 			break;
 
 		case STATE_STARTED_RIGHT6:
-			startLineFollowing(FWD_SPEED);
+			startLineFollowing(FWD_SPEED2);
 			state = STATE_FOLLOW_HLINE1;
 			break;
 
 		case STATE_FOLLOW_HLINE1:
-			if (followLine(FWD_SPEED) != LINE_FOLLOW_OK) {
+			if (followLine(FWD_SPEED2) != LINE_FOLLOW_OK) {
 				adjustMotion(SLOW_SPEED, 0);	// assume reached T
 				state = STATE_FOLLOW_HLINE2;
 			}
@@ -249,11 +253,19 @@ void loop() {
 			startLineFollowing(FWD_SPEED2);
 			state = STATE_FOLLOW_SLLINE1;
 			sDir = S_LEFT;	
+			crossedMiddle = 1;
 			break;
 
 		case STATE_FOLLOW_SLLINE0:
 			startLineFollowing(FWD_SPEED2);
 			state = STATE_FOLLOW_SLLINE1;
+			crossedMiddle = 0;
+			break;
+
+		case STATE_FOLLOW_SLLINE0A:
+			readFrontSensors(val);
+			if (hasLine(val))
+				state = STATE_FOLLOW_SLLINE1;
 			break;
 
 		case STATE_FOLLOW_SLLINE1:
@@ -269,9 +281,13 @@ void loop() {
 				sDir = S_RIGHT;
 			}
 
-			if (outOfTokens && readSideSensor()) {
-				// go home. yipee!
-				stopRobot(STATE_HEAD_HOME2);
+			if (readSideSensor()) {
+				crossedMiddle = 1;
+
+				if (outOfTokens) {
+					// go home. yipee!
+					stopRobot(STATE_HEAD_HOME2);
+				}
 			}
 			break;
 
@@ -288,6 +304,13 @@ void loop() {
 		case STATE_FOLLOW_SRLINE0:
 			startLineFollowing(-FWD_SPEED2);
 			state = STATE_FOLLOW_SRLINE1;
+			crossedMiddle = 0;
+			break;
+
+		case STATE_FOLLOW_SRLINE0A:		// cover the case where we accidentally shoot off the line
+			readBackSensors(val);
+			if (hasLine(val))
+				state = STATE_FOLLOW_SRLINE1;
 			break;
 
 		case STATE_FOLLOW_SRLINE1:
@@ -303,10 +326,13 @@ void loop() {
 				sDir = S_LEFT;
 			}
 			
-			if (outOfTokens && readSideSensor()) {
-				// go home. yipee!
-				stopRobot(STATE_HEAD_HOME2);
-				//state = STATE_HEAD_HOME1;
+			if (readSideSensor()) {
+				crossedMiddle = 1;
+
+				if (outOfTokens) {
+					// go home. yipee!
+					stopRobot(STATE_HEAD_HOME2);
+				}
 			}
 			break;
 
@@ -333,10 +359,18 @@ void loop() {
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 				if (readSideSeesaw() && !outOfTokens)
 					state = STATE_DISPENSE_TOKEN1;
-				else if (sDir == S_LEFT)
-					state = STATE_FOLLOW_SLLINE0;
-				else
-					state = STATE_FOLLOW_SRLINE0;
+				else if (sDir == S_LEFT) {		// was going left
+					if (outOfTokens && crossedMiddle)
+						state = STATE_FOLLOW_SRLINE0;
+					else
+						state = STATE_FOLLOW_SLLINE0;
+				}
+				else {	// was going right
+					if (outOfTokens && crossedMiddle)
+						state = STATE_FOLLOW_SLLINE0;
+					else
+						state = STATE_FOLLOW_SRLINE0;
+				}
 			}
 			break;
 
@@ -373,7 +407,8 @@ void loop() {
 			followLine(FWD_SPEED);
 
 			if (testWallSensor()) {
-				stopRobot(STATE_WAIT_TOKEN_LOAD);
+				adjustMotion(0,0);
+				state = STATE_WAIT_TOKEN_LOAD;
 			}
 
 			if (testTokensLoadedSensor()) {
@@ -382,18 +417,23 @@ void loop() {
 			break;
 
 		case STATE_WAIT_TOKEN_LOAD:
+			if (testWallSensor())
+				adjustMotion(0,0);
+			else
+				adjustMotion(180,0);
+
 			if (testTokensLoadedSensor())
 				state = STATE_TOKEN_LOADED;
 			break;
 
 		case STATE_TOKEN_LOADED:
-			startLineFollowing(-FWD_SPEED);
+			startLineFollowing(-FWD_SPEED2);
 			state = STATE_FOLLOW_B_HLINE1;
 			outOfTokens = 0;
 			break;
 
 		case STATE_FOLLOW_B_HLINE1:
-			if (followLine(-FWD_SPEED) != LINE_FOLLOW_OK) {
+			if (followLine(-FWD_SPEED2) != LINE_FOLLOW_OK) {
 				adjustMotion(-SLOW_SPEED, 0); // assume reached T
 				state = STATE_FOLLOW_B_HLINE2;
 			}

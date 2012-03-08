@@ -22,7 +22,7 @@
 #define MOTOR_FULL_POWER_TIME 5	// time to give motors full power initially (msecs)
 #define MOTOR_STOP_TIME_TURN 20	// time to give motors full power reverse for stop (msecs)
 #define MOTOR_STOP_TIME_FWD 45	// time to give motors full power reverse for stop (msecs)
-#define STOP_PAUSE_TIME 500
+#define STOP_PAUSE_TIME 900
 
 //
 // Timers
