@@ -90,8 +90,10 @@ void stopMotion() {
 	digitalWrite(MOTOR_LEFT_DIR, (leftSpeed < 0) ? LOW : HIGH);
 	digitalWrite(MOTOR_RIGHT_DIR, (rightSpeed > 0) ? LOW : HIGH);
 
-	analogWrite(MOTOR_LEFT_PWM, 255);
-	analogWrite(MOTOR_RIGHT_PWM, 255);
+	if (abs(leftSpeed) > 0)
+		analogWrite(MOTOR_LEFT_PWM, 255);
+	if (abs(rightSpeed) > 0)
+		analogWrite(MOTOR_RIGHT_PWM, 255);
 
 	// set stop timer
 	if (abs(leftSpeed-rightSpeed) > 200)	// should be a turn

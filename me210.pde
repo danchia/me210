@@ -18,8 +18,10 @@
 #define PIVOT_SPEED 145
 
 #define END_OF_LINE_TIME 400
-#define END_OF_LINE_TIME_RIGHT 500
+#define END_OF_LINE_TIME_RIGHT 480
 #define TOKEN_DROP_TIME 2500
+
+#define PIVOT_LINE_CLEAR_TIME 500
 
 #define S_LEFT 0
 #define S_RIGHT 1
@@ -29,10 +31,34 @@ static MainState state, nextState;	// next state used for helper states combinat
 static char sDir;
 static char outOfTokens;
 
+void testLineSensor() {
+	int val[3];
+
+	while(1) {
+		readFrontSensors(val);
+		Serial.print(val[0]);
+		Serial.print(" ");
+		Serial.print(val[1]);
+		Serial.print(" ");
+		Serial.print(val[2]);
+		readBackSensors(val);
+		Serial.print("     ");
+		Serial.print(val[0]);
+		Serial.print(" ");
+		Serial.print(val[1]);
+		Serial.print(" ");
+		Serial.println(val[2]);
+		
+		delay(500);
+	}
+}
+
 void setup() {
 	// init state machine
 	state = STATE_START;
 	outOfTokens = 0;
+	state = STATE_FOLLOW_SLLINE0;
+	sDir = S_LEFT;
 	//state = STATE_FOLLOW_SRLINE0;
 	//sDir = S_RIGHT;
 
@@ -46,6 +72,8 @@ void setup() {
 	// initialize serial
 	Serial.begin(57600);
 	Serial.println("Initialized");
+
+	//testLineSensor();
 }
 
 // stops the robot, and when done transition to state next
@@ -238,12 +266,12 @@ void loop() {
 			if (followLineRetVal == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SLLINE2;
+				sDir = S_RIGHT;
 			}
 
 			if (outOfTokens && readSideSensor()) {
 				// go home. yipee!
-				adjustMotion(SLOW_SPEED, 0);
-				state = STATE_HEAD_HOME1;
+				stopRobot(STATE_HEAD_HOME2);
 			}
 			break;
 
@@ -254,7 +282,6 @@ void loop() {
 
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 				stopRobot(STATE_FOLLOW_SRLINE0);
-				sDir = S_RIGHT;
 			}
 			break;
 
@@ -273,6 +300,7 @@ void loop() {
 			if (followLineRetVal == LINE_FOLLOW_NO_LINE) {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME_RIGHT); // continue for a while before going around 
 				state = STATE_FOLLOW_SRLINE2;
+				sDir = S_LEFT;
 			}
 			
 			if (outOfTokens && readSideSensor()) {
@@ -289,7 +317,6 @@ void loop() {
 
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 				stopRobot(STATE_FOLLOW_SLLINE0);
-				sDir = S_LEFT;
 			}
 			break;
 
@@ -321,7 +348,7 @@ void loop() {
 
 		case STATE_HEAD_HOME2:
 			setMotion(0, -PIVOT_SPEED);
-			TMRArd_InitTimer(MAIN_TIMER, 300);
+			TMRArd_InitTimer(MAIN_TIMER, PIVOT_LINE_CLEAR_TIME);
 			state = STATE_HEAD_HOME3;
 			break;
 
@@ -379,8 +406,14 @@ void loop() {
 			break;
 
 		case STATE_FOLLOW_B_HLINE3:
-			setMotion(0, -PIVOT_SPEED);
-			state = STATE_FOLLOW_HLINE4;
+			setMotion(0, PIVOT_SPEED);
+			TMRArd_InitTimer(MAIN_TIMER, PIVOT_LINE_CLEAR_TIME);
+			state = STATE_FOLLOW_B_HLINE4;
+			break;
+
+		case STATE_FOLLOW_B_HLINE4:
+			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED)
+				state = STATE_FOLLOW_HLINE4;
 			break;
 
 		case STATE_STOPPING1:

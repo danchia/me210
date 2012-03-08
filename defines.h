@@ -16,7 +16,7 @@
 #define LINE_KD 12	
 #define LINE_POS_SCALE 100
 #define LINE_SENSOR_MIN_THRES 800
-#define LINE_SENSOR_MAX_THRES 100
+#define LINE_SENSOR_MAX_THRES 135
 #define LINE_FOLLOW_UPDATE_PERIOD 2	// 2ms period, 500Hz control rate
 
 #define MOTOR_FULL_POWER_TIME 5	// time to give motors full power initially (msecs)

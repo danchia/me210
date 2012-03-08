@@ -55,7 +55,9 @@ char followLine(int spd) {
 	if (min > LINE_SENSOR_MIN_THRES) {	// all black
 		retVal = LINE_FOLLOW_ALL_LINE;
 	}
-	else if (max < LINE_SENSOR_MAX_THRES) {	// no line!
+//	else if ((spd > 0 && max < LINE_SENSOR_MAX_THRES_FRONT) ||
+//			spd < 0 && max < LINE_SENSOR_MAX_THRES_BACK) {	// no line!
+	else if (max < LINE_SENSOR_MAX_THRES) {
 		retVal = LINE_FOLLOW_NO_LINE;
 	}
 	else {
