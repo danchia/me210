@@ -18,7 +18,7 @@
 #define PIVOT_SPEED 155
 
 #define END_OF_LINE_TIME 300
-#define END_OF_LINE_TIME_RIGHT 450
+#define END_OF_LINE_TIME_RIGHT 420
 #define TOKEN_DROP_TIME 2500
 
 #define PIVOT_LINE_CLEAR_TIME 500
@@ -258,7 +258,7 @@ void loop() {
 
 		case STATE_FOLLOW_SLLINE0:
 			startLineFollowing(FWD_SPEED2);
-			state = STATE_FOLLOW_SLLINE1;
+			state = STATE_FOLLOW_SLLINE0A;
 			crossedMiddle = 0;
 			break;
 
@@ -279,6 +279,7 @@ void loop() {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME); // continue for a while before going around 
 				state = STATE_FOLLOW_SLLINE2;
 				sDir = S_RIGHT;
+				crossedMiddle = 0;
 			}
 
 			if (readSideSensor()) {
@@ -324,6 +325,7 @@ void loop() {
 				TMRArd_InitTimer(MAIN_TIMER, END_OF_LINE_TIME_RIGHT); // continue for a while before going around 
 				state = STATE_FOLLOW_SRLINE2;
 				sDir = S_LEFT;
+				crossedMiddle = 0;
 			}
 			
 			if (readSideSensor()) {
@@ -407,7 +409,7 @@ void loop() {
 			followLine(FWD_SPEED);
 
 			if (testWallSensor()) {
-				adjustMotion(0,0);
+				setMotion(255,0);
 				state = STATE_WAIT_TOKEN_LOAD;
 			}
 
@@ -417,10 +419,7 @@ void loop() {
 			break;
 
 		case STATE_WAIT_TOKEN_LOAD:
-			if (testWallSensor())
-				adjustMotion(0,0);
-			else
-				adjustMotion(180,0);
+			adjustMotion(0,0);
 
 			if (testTokensLoadedSensor())
 				state = STATE_TOKEN_LOADED;
