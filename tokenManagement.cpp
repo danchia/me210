@@ -192,6 +192,6 @@ int bucketsLeft(void) {
   Returns:     1 or 0 depending whether servo is depositing tokens
   Notes:
 ******************************************************************************/
-int isServoDepositingTokens(void) {
-  return depositingTokens;
+char isServoDepositingTokens(void) {
+  return depositingTokens != 0;
 }

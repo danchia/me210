@@ -12,14 +12,14 @@
 #include <Timers.h>
 
 #define FWD_SPEED 150
-#define FWD_SPEED2 165
-#define SLOW_SPEED 115
+#define FWD_SPEED2 157
+#define SLOW_SPEED 100
 
 #define PIVOT_SPEED 155
 
 #define END_OF_LINE_TIME 300
 #define END_OF_LINE_TIME_RIGHT 420
-#define TOKEN_DROP_TIME 2500
+#define TOKEN_DROP_TIME 1200
 
 #define PIVOT_LINE_CLEAR_TIME 500
 
@@ -141,7 +141,7 @@ void loop() {
 			break;
 
 		case STATE_STARTED_LEFT2:
-			setMotion(FWD_SPEED, -4);
+			setMotion(FWD_SPEED, -5);
 			state = STATE_STARTED_LEFT3;
 			break;
 
@@ -194,7 +194,7 @@ void loop() {
 			readFrontSensors(val);
 			if (hasLine(val)) {
 				//TMRArd_InitTimer(MAIN_TIMER, 100);
-				adjustMotion(-30, 0);
+				adjustMotion(-60, 0);
 				state = STATE_STARTED_RIGHT4;
 			}
 			break;
@@ -271,6 +271,7 @@ void loop() {
 		case STATE_FOLLOW_SLLINE1:
 			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
+				break;
 			}
 
 			followLineRetVal = followLine(FWD_SPEED2);	
@@ -295,6 +296,7 @@ void loop() {
 		case STATE_FOLLOW_SLLINE2:
 			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
+				break;
 			}
 
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
@@ -304,7 +306,7 @@ void loop() {
 
 		case STATE_FOLLOW_SRLINE0:
 			startLineFollowing(-FWD_SPEED2);
-			state = STATE_FOLLOW_SRLINE1;
+			state = STATE_FOLLOW_SRLINE0A;
 			crossedMiddle = 0;
 			break;
 
@@ -317,6 +319,7 @@ void loop() {
 		case STATE_FOLLOW_SRLINE1:
 			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
+				break;
 			}
 
 			followLineRetVal = followLine(-FWD_SPEED2);
@@ -341,6 +344,7 @@ void loop() {
 		case STATE_FOLLOW_SRLINE2:
 			if (readSideSeesaw() && !outOfTokens) {
 				stopRobot(STATE_DISPENSE_TOKEN1);
+				break;
 			}
 
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
@@ -350,11 +354,17 @@ void loop() {
 
 		case STATE_DISPENSE_TOKEN1:
 			depositTokens();			
-			TMRArd_InitTimer(MAIN_TIMER, TOKEN_DROP_TIME);
-			state = STATE_DISPENSE_TOKEN2;
+			state = STATE_DISPENSE_TOKEN1A;
 
 			if (bucketsLeft() == 0)
 				outOfTokens = 1;
+			break;
+
+		case STATE_DISPENSE_TOKEN1A:
+			if (!isServoDepositingTokens()) {
+				TMRArd_InitTimer(MAIN_TIMER, TOKEN_DROP_TIME);
+				state = STATE_DISPENSE_TOKEN2;
+			}
 			break;
 
 		case STATE_DISPENSE_TOKEN2:
