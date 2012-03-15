@@ -11,19 +11,24 @@
 #include <Servo.h>
 #include <Timers.h>
 
-#define FWD_SPEED 150
-#define FWD_SPEED2 157
-#define SLOW_SPEED 100
+//
+//	Constants
+//
 
-#define PIVOT_SPEED 155
+#define FWD_SPEED 150		// speed when headed to line
+#define FWD_SPEED2 157	// speed while following line
+#define SLOW_SPEED 100	// speed while looking for junctions
 
-#define END_OF_LINE_TIME 300
-#define END_OF_LINE_TIME_RIGHT 420
-#define TOKEN_DROP_TIME 1200
+#define PIVOT_SPEED 155	// pivot turn speed
 
-#define PIVOT_LINE_CLEAR_TIME 500
+#define END_OF_LINE_TIME 300	// how long to go on forwards after detect end of line for seesaw line
+#define END_OF_LINE_TIME_RIGHT 420	// how long to go on backwards after detecting end of seesaw line
+#define TOKEN_DROP_TIME 1200	// how long to delay after token dispensor is done moving
 
-#define S_LEFT 0
+#define PIVOT_LINE_CLEAR_TIME 500	// delay to wait for front sensors to clear the line during initial part of pivot turn
+
+// direction while on seesaw line
+#define S_LEFT 0	
 #define S_RIGHT 1
 
 
@@ -31,36 +36,10 @@ static MainState state, nextState;	// next state used for helper states combinat
 static char sDir, crossedMiddle;
 static char outOfTokens;
 
-void testLineSensor() {
-	int val[3];
-
-	while(1) {
-		readFrontSensors(val);
-		Serial.print(val[0]);
-		Serial.print(" ");
-		Serial.print(val[1]);
-		Serial.print(" ");
-		Serial.print(val[2]);
-		readBackSensors(val);
-		Serial.print("     ");
-		Serial.print(val[0]);
-		Serial.print(" ");
-		Serial.print(val[1]);
-		Serial.print(" ");
-		Serial.println(val[2]);
-		
-		delay(500);
-	}
-}
-
 void setup() {
 	// init state machine
 	state = STATE_START;
 	outOfTokens = 0;
-	//state = STATE_FOLLOW_SLLINE0;
-	//sDir = S_LEFT;
-	//state = STATE_FOLLOW_SRLINE0;
-	//sDir = S_RIGHT;
 
 	// initialize modules
 	globalTimeoutSetup();
@@ -72,8 +51,6 @@ void setup() {
 	// initialize serial
 	Serial.begin(57600);
 	Serial.println("Initialized");
-
-	//testLineSensor();
 }
 
 // stops the robot, and when done transition to state next
@@ -83,6 +60,7 @@ void stopRobot(MainState next) {
 	nextState = next;
 }
 
+// main FSM
 void loop() {
 	static unsigned long time1, time2, time3;
 	int val[3];
@@ -98,6 +76,8 @@ void loop() {
 			setMotion(0, SEESAW_HOME_TURN_SPD);
 			state = STATE_FIND_SIDE_HOME1;
 			break;
+
+		// spin around to decide which side of play area we are on
 
 		case STATE_FIND_SIDE_HOME1:
 			if (readHomeBeacon()) {
@@ -134,6 +114,8 @@ void loop() {
 			}
 			break;
 
+		// started on the left side, head to line and turn left
+
 		case STATE_STARTED_LEFT1:
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 				stopRobot(STATE_STARTED_LEFT2);
@@ -148,14 +130,12 @@ void loop() {
 		case STATE_STARTED_LEFT3:
 			readFrontSensors(val);
 			if (hasLine(val)) {
-				//TMRArd_InitTimer(MAIN_TIMER, 100);
 				adjustMotion(-30, 0);
 				state = STATE_STARTED_LEFT4;
 			}
 			break;
 
 		case STATE_STARTED_LEFT4:
-			//if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 			if (readSideSensor()) {
 				adjustMotion(10,0);	// hack to get kick in right direction
 				stopRobot(STATE_STARTED_LEFT4A);
@@ -179,6 +159,8 @@ void loop() {
 			state = STATE_FOLLOW_HLINE1;
 			break;
 
+		// started on the right side, head to line and turn right
+
 		case STATE_STARTED_RIGHT1:
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 				stopRobot(STATE_STARTED_RIGHT2);
@@ -193,14 +175,12 @@ void loop() {
 		case STATE_STARTED_RIGHT3:
 			readFrontSensors(val);
 			if (hasLine(val)) {
-				//TMRArd_InitTimer(MAIN_TIMER, 100);
 				adjustMotion(-60, 0);
 				state = STATE_STARTED_RIGHT4;
 			}
 			break;
 
 		case STATE_STARTED_RIGHT4:
-			//if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
 			if (readSideSensor()) {
 				adjustMotion(10,0);	// hack to get kick in right direction
 				stopRobot(STATE_STARTED_RIGHT4A);
@@ -223,6 +203,8 @@ void loop() {
 			startLineFollowing(FWD_SPEED2);
 			state = STATE_FOLLOW_HLINE1;
 			break;
+
+		// follow the line from home to the T-junction
 
 		case STATE_FOLLOW_HLINE1:
 			if (followLine(FWD_SPEED2) != LINE_FOLLOW_OK) {
@@ -255,6 +237,9 @@ void loop() {
 			sDir = S_LEFT;	
 			crossedMiddle = 1;
 			break;
+
+		// follow the seesaw line, heading forwards (left)
+		// deposit tokens if see beacon
 
 		case STATE_FOLLOW_SLLINE0:
 			startLineFollowing(FWD_SPEED2);
@@ -304,6 +289,9 @@ void loop() {
 			}
 			break;
 
+		// follow the seesaw line, heading backwards (right)
+		// deposit tokens if see beacon
+
 		case STATE_FOLLOW_SRLINE0:
 			startLineFollowing(-FWD_SPEED2);
 			state = STATE_FOLLOW_SRLINE0A;
@@ -352,6 +340,9 @@ void loop() {
 			}
 			break;
 
+
+		// set of helper states to disponse tokens
+
 		case STATE_DISPENSE_TOKEN1:
 			depositTokens();			
 			state = STATE_DISPENSE_TOKEN1A;
@@ -369,8 +360,9 @@ void loop() {
 
 		case STATE_DISPENSE_TOKEN2:
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED) {
-				if (readSideSeesaw() && !outOfTokens)
+				if (readSideSeesaw() && !outOfTokens) {	// if seesaw not down yet dispense again
 					state = STATE_DISPENSE_TOKEN1;
+				}
 				else if (sDir == S_LEFT) {		// was going left
 					if (outOfTokens && crossedMiddle)
 						state = STATE_FOLLOW_SRLINE0;
@@ -385,6 +377,8 @@ void loop() {
 				}
 			}
 			break;
+
+		// start following to line to super-PAC
 
 		case STATE_HEAD_HOME1:
 			if (readSideSensor()) {
@@ -441,6 +435,8 @@ void loop() {
 			outOfTokens = 0;
 			break;
 
+		// tokens loaded, head back from home line backwards
+
 		case STATE_FOLLOW_B_HLINE1:
 			if (followLine(-FWD_SPEED2) != LINE_FOLLOW_OK) {
 				adjustMotion(-SLOW_SPEED, 0); // assume reached T
@@ -465,6 +461,8 @@ void loop() {
 				state = STATE_FOLLOW_HLINE4;
 			break;
 
+		// waiting for robot to stop moving (through stopMotion)
+
 		case STATE_STOPPING1:
 			if (motorDoneStop()) {
 				TMRArd_InitTimer(MAIN_TIMER, STOP_PAUSE_TIME);
@@ -476,6 +474,8 @@ void loop() {
 			if (TMRArd_IsTimerExpired(MAIN_TIMER) == TMRArd_EXPIRED)
 				state = nextState;
 			break;
+
+		// chillax, set motor speed to 0
 
 		case STATE_IDLE:
 			adjustMotion(0,0);

@@ -13,7 +13,7 @@
 static int oldError;
 
 void startLineFollowing(int spd) {
-	oldError = 0;
+	oldError = 0;		// reset the error
 	setMotion(spd, 0);
 	TMRArd_InitTimer(LINE_FOLLOW_TIMER, LINE_FOLLOW_UPDATE_PERIOD);
 }
@@ -54,14 +54,12 @@ char followLine(int spd) {
 	if (min > LINE_SENSOR_MIN_THRES) {	// all black
 		retVal = LINE_FOLLOW_ALL_LINE;
 	}
-//	else if ((spd > 0 && max < LINE_SENSOR_MAX_THRES_FRONT) ||
-//			spd < 0 && max < LINE_SENSOR_MAX_THRES_BACK) {	// no line!
-	else if (max < LINE_SENSOR_MAX_THRES) {
+	else if (max < LINE_SENSOR_MAX_THRES) {	// no line found (values too close)
 		retVal = LINE_FOLLOW_NO_LINE;
 	}
 	else {
-		correction = (error * LINE_KP) >> 3;
-		correction += (error - oldError) * LINE_KD;
+		correction = (error * LINE_KP) >> 3;		// Proportional component
+		correction += (error - oldError) * LINE_KD;		// Derivative control
 		retVal = LINE_FOLLOW_OK;
 	}
 

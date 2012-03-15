@@ -98,7 +98,7 @@ void stopMotion() {
 	// set stop timer
 	if (abs(leftSpeed-rightSpeed) > 200)	// should be a turn
 		TMRArd_InitTimer(MOTOR_TIMER, MOTOR_STOP_TIME_TURN);
-	else
+	else	// was forward/backward motion
 		TMRArd_InitTimer(MOTOR_TIMER, MOTOR_STOP_TIME_FWD);
 
 	leftSpeed = 0;

@@ -20,12 +20,12 @@
 #define LINE_FOLLOW_UPDATE_PERIOD 2	// 2ms period, 500Hz control rate
 
 #define MOTOR_FULL_POWER_TIME 5	// time to give motors full power initially (msecs)
-#define MOTOR_STOP_TIME_TURN 20	// time to give motors full power reverse for stop (msecs)
-#define MOTOR_STOP_TIME_FWD 45	// time to give motors full power reverse for stop (msecs)
+#define MOTOR_STOP_TIME_TURN 20	// time to give motors full power reverse for stop, when doing a pivot turn (msecs)
+#define MOTOR_STOP_TIME_FWD 45	// time to give motors full power reverse for stop, when moving forward/back (msecs)
 #define STOP_PAUSE_TIME 900
 
 //
-// Timers
+// Timers, allocate so that modules don't clash on timer use
 //
 
 #define MOTOR_TIMER 1
